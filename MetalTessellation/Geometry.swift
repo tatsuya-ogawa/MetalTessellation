@@ -44,10 +44,8 @@ class Geometry {
                              bufferAllocator: MTKMeshBufferAllocator(device: device))
         // 0決め打ち
         do {
-            var mdlArray: NSArray?
-            let _ = try MTKMesh.newMeshes(from: asset, device: device, sourceMeshes: &mdlArray)
-            
-            guard let mdl = mdlArray?[0] as? MDLMesh else { return nil }
+            let mdlMeshes = try MTKMesh.newMeshes(asset:asset, device: device)
+            guard let mdl = mdlMeshes.modelIOMeshes.first else{return nil} //mdlArray?[0] as? MDLMesh else { return nil }
             if let threshold = addNormalThreshold {
                 mdl.addNormals(withAttributeNamed: MDLVertexAttributeNormal, creaseThreshold: threshold)
             }
@@ -122,7 +120,7 @@ class Geometry {
             }
             count += indices.count
             
-            let element = vertexDescriptor.layouts[0].stride / MemoryLayout<Float>.size
+            let element = (vertexDescriptor?.layouts[0].stride)!  / MemoryLayout<Float>.size
             let p = mesh.vertexBuffers[0].buffer.contents().assumingMemoryBound(to: Float.self)
             let data = UnsafeBufferPointer(start: p, count: mesh.vertexCount * element)
             
@@ -140,7 +138,7 @@ class Geometry {
         
         return (buffer: device.makeBuffer(bytes: &buf, length: MemoryLayout<Float>.stride * buf.count, options: []),
                 count: count,
-                descriptor: vertexDescriptor)
+                descriptor: vertexDescriptor) as! (buffer: MTLBuffer, count: Int, descriptor: MTLVertexDescriptor)
     }
     
     

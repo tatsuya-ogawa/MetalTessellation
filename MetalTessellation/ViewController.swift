@@ -50,7 +50,7 @@ class ViewController: NSViewController {
     var isWireFrame = false {
         didSet {
             renderer.isWireFrame = isWireFrame
-            wireCheckButton.state = isWireFrame ? NSOnState : NSOffState
+            wireCheckButton.state = isWireFrame ? .on : .off
         }
     }
 
@@ -201,7 +201,7 @@ class ViewController: NSViewController {
     }
     
     @IBAction private func tapWireFrame(sender: NSButton) {
-        isWireFrame = (sender.state != 0)
+        isWireFrame = (sender.state != NSControl.StateValue(rawValue: 0))
     }
     
     @IBAction private func changeTessellationFactor(sender: NSSlider) {

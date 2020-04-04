@@ -105,12 +105,12 @@ class Renderer: NSObject, MTKViewDelegate {
         
         guard let device = MTLCreateSystemDefaultDevice() else { return nil }
         self.device = device
-        self.commandQueue = device.makeCommandQueue()
+        self.commandQueue = device.makeCommandQueue() as! MTLCommandQueue
         
-        guard let library = device.newDefaultLibrary() else { return nil }
+        guard let library = device.makeDefaultLibrary() else { return nil }
         self.library = library
         
-        self.frameUniformBuffer = device.makeBuffer(length: MemoryLayout<FrameUniforms>.size, options: [])
+        self.frameUniformBuffer = device.makeBuffer(length: MemoryLayout<FrameUniforms>.size, options: []) as! MTLBuffer
         
         super.init()
         
@@ -142,21 +142,21 @@ class Renderer: NSObject, MTKViewDelegate {
             totalTime += deltaTime
 
             let commandBuffer = commandQueue.makeCommandBuffer()
-            compute(commandBuffer: commandBuffer)
+            compute(commandBuffer: commandBuffer as! MTLCommandBuffer)
 
             update()
 
-            let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderDescriptor)
-            render(encoder: renderEncoder)
-            renderEncoder.endEncoding()
-            commandBuffer.present(drawable)
+            let renderEncoder = commandBuffer?.makeRenderCommandEncoder(descriptor: renderDescriptor)
+            render(encoder: renderEncoder as! MTLRenderCommandEncoder)
+            renderEncoder?.endEncoding()
+            commandBuffer?.present(drawable)
             
-            commandBuffer.addCompletedHandler { _ in
+            commandBuffer?.addCompletedHandler { _ in
                 self.drawTime = Date().timeIntervalSince(self.lastTime)
                 self.semaphore.signal()
             }
             
-            commandBuffer.commit()
+            commandBuffer?.commit()
         }
     }
     
@@ -189,12 +189,12 @@ class Renderer: NSObject, MTKViewDelegate {
             
             updateFramUniforms(modelMatrinx: $0.modelMatrix)
             
-            encoder.setVertexBuffer(frameUniformBuffer, offset: 0, at: VertexBufferIndex.frameUniformas.rawValue)
-            encoder.setVertexBuffer($0.vertexBuffer, offset: 0, at: VertexBufferIndex.vertexData.rawValue)
+            encoder.setVertexBuffer(frameUniformBuffer, offset: 0, index: VertexBufferIndex.frameUniformas.rawValue)
+            encoder.setVertexBuffer($0.vertexBuffer, offset: 0, index: VertexBufferIndex.vertexData.rawValue)
             
-            encoder.setVertexTexture($0.vertexTexture, at: 0)
+            encoder.setVertexTexture($0.vertexTexture, index: 0)
             
-            encoder.setFragmentTexture($0.fragmentTexture, at: 0)
+            encoder.setFragmentTexture($0.fragmentTexture, index: 0)
 
             encoder.setTriangleFillMode(fillMode)
             
